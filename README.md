@@ -1,10 +1,10 @@
-# LeadBack
+# LeadBack CRM
 
 Protótipo de um painel comercial para acompanhar conversas e organizar retornos. A demo permite percorrer o fluxo de uma oportunidade, desde a leitura da conversa até o registro de uma recuperação.
 
 [Abrir a demonstração no navegador](https://jotadev21-portfolio.comettitan7.chatgpt.site/demos/leadback/)
 
-## Experimente o fluxo
+## Como testar a demo
 
 1. Abra **Oportunidades** e selecione Mariana Costa.
 2. Leia a conversa, gere um follow-up, edite o texto e agende um retorno.
