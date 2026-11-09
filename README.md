@@ -1,38 +1,47 @@
 # LeadBack
 
-MVP em Next.js App Router, React, TypeScript, Tailwind CSS e componentes no padrão shadcn/ui (Radix, CVA). Interface pt-BR, desktop-first e responsiva.
+Protótipo de um painel comercial para acompanhar conversas e organizar retornos. A demo permite percorrer o fluxo de uma oportunidade, desde a leitura da conversa até o registro de uma recuperação.
 
-## Executar
+## Experimente o fluxo
 
-Node.js 22+: `npm install`, `npm run dev`. Verificações: `npm test` e `npm run build`. O build gera `out/` para hospedagem estática. As rotas `/`, `/oportunidades/`, `/followups/`, `/analytics/`, `/configuracoes/`, `/login/` e `/onboarding/` são exportadas.
+1. Abra **Oportunidades** e selecione Mariana Costa.
+2. Leia a conversa, gere um follow-up, edite o texto e agende um retorno.
+3. Use **Simular envio** para registrar uma mensagem e criar uma sequência de retornos.
+4. Use **Simular resposta do cliente** para cancelar os retornos pendentes.
+5. Marque a oportunidade como recuperada e confira o resultado na lista **Recuperadas**.
 
-## Demonstração
+Os contatos e as conversas são fictícios. A demo guarda as mudanças em memória. A conexão com WhatsApp e os envios são simulados. A sugestão de texto e a classificação seguem regras locais, sem chamadas a um modelo de IA. O modo de demonstração oferece uma ferramenta de leitura WebMCP em navegadores compatíveis para listar as oportunidades fictícias.
 
-Sem configuração Supabase, o produto abre em modo demonstrativo: 20 contatos, 60 mensagens, 16 oportunidades e 8 follow-ups. Todos os dados são fictícios. Alterações ficam em memória durante a sessão e não são persistidas. O modo é indicado na interface. Envios e conexão WhatsApp são simulações. A classificação é uma função mock determinística substituível por `IntelligenceProvider`. Nenhum segredo ou mensagem real é usado.
+## Rode localmente
 
-Fluxo: abra Oportunidades, selecione um lead, confira a conversa, gere/edite uma mensagem, agende um retorno. “Simular envio” registra a mensagem no histórico e cria uma sequência de retornos conforme as regras ativas, respeitando o expediente no fuso do navegador. “Simular resposta” adiciona uma mensagem recebida e cancela os agendamentos pendentes. “Marcar como recuperada” atualiza dashboard e analytics. Não existe disparador automático de mensagens reais ativo na demonstração.
+Com Node.js 22 ou superior e npm, execute os comandos na raiz do projeto.
 
-## Supabase / PostgreSQL / Auth
+```sh
+npm ci
+npm run dev
+```
 
-1. Crie um projeto Supabase e aplique `supabase/migrations/001_initial.sql` uma vez em um banco novo.
-2. Configure a confirmação de e-mail e as URLs autorizadas do projeto Auth.
-3. Copie `.env.example` para `.env.local` e preencha `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` (chave pública, nunca service role).
-4. Reinicie ou reconstrua o app. Login/cadastro passam a usar Supabase Auth; o cadastro cria automaticamente empresa, perfil, regras e registro de assinatura inativa. Contatos reais começam vazios. Dados demonstrativos não são importados no banco.
-5. O frontend passa a ler/gravar a empresa do usuário autenticado. Políticas RLS isolam empresas e impedem que clientes alterem sua própria associação. Chaves compostas impedem referências cruzadas entre empresas. Somente proprietários editam empresa/regras.
+Abra `http://127.0.0.1:3000`. O modo de demonstração funciona sem configurar variáveis de ambiente.
 
-Não foram fornecidas credenciais neste trabalho: banco remoto, envio de e-mail e RLS em um Supabase real ainda precisam de validação antes de uso com clientes. Não existe fluxo de convite de equipe no MVP.
+```sh
+npm test
+npm run build
+```
 
-## Fronteiras para as integrações
+Os testes cobrem os dados de demonstração, a classificação e as regras de follow-up. O build gera o site estático em `out/`.
 
-- `lib/classifier.ts`: contrato `IntelligenceProvider` e implementação mock. Uma função server-side pode implementar esse contrato para OpenAI ou outro modelo. Validar o JSON de saída, limitar tamanho de conversa e manter chaves no servidor.
-- `lib/integrations/whatsapp.ts`: contrato de provedor e guarda de envio. O provedor não configurado sempre falha de forma explícita.
-- Webhook futuro: validar assinatura sobre corpo bruto, resolver empresa por conexão verificada no servidor, deduplicar pelo `provider_id`, gravar mensagens/conversas com service role somente no servidor. O trigger SQL cancela follow-ups não enviados na mesma transação de uma resposta.
-- Processador futuro: consultar jobs vencidos, obter lock/claim transacional, reler última resposta e status, respeitar janela comercial/fuso da empresa, aplicar idempotência e backoff, e atualizar `sent_at` somente após confirmação do provedor. A criação de sequências é simulada no frontend; o worker e a criação de sequências server-side ainda não estão ativados.
-- WhatsApp Business: o adaptador real deve tratar mensagens modelo e regras aplicáveis ao tipo de envio. Nunca marcar conectado ou enviado antes da confirmação do provedor.
-- Assinaturas: estrutura de dados preparada, sem gateway de pagamentos ou cobrança ativa.
+## Estrutura
 
-## Organização
+| Pasta | Conteúdo |
+| --- | --- |
+| `app/` | Rotas, estilos e layout da aplicação Next.js. |
+| `components/` | Telas em React, componentes de interface e estado da aplicação. |
+| `lib/` | Tipos TypeScript, dados fictícios, regras de classificação e agendamento, e interface do provedor de WhatsApp. |
+| `supabase/migrations/` | Esquema PostgreSQL, políticas de acesso por empresa e gatilho para cancelar retornos após uma resposta. |
+| `tests/` | Testes de domínio e roteiro de navegação da demo. |
 
-`app/`: rotas e tema. `components/`: telas, estado/repositório e UI acessível. `lib/`: domínio, dados demo e integrações. `supabase/migrations/`: esquema, segurança e triggers. `tests/`: volume/relacionamentos do mock, classificação e regras de cancelamento/dispatch.
+## Ambiente de teste com Supabase
 
-Um WebMCP opcional de leitura (`list_opportunities`) é registrado quando o navegador oferece `document.modelContext`; navegadores comuns não precisam desse recurso.
+Para explorar cadastro, login e persistência, crie um projeto de teste no Supabase e aplique `supabase/migrations/001_initial.sql` em um banco vazio. Configure as URLs autorizadas e a confirmação de e-mail no Supabase Auth. Copie `.env.example` para `.env.local`, informe a URL do projeto e a chave pública `anon`, depois reinicie o aplicativo. Mantenha chaves privilegiadas fora do frontend. O cadastro cria uma empresa com dados inicialmente vazios.
+
+O projeto inclui a estrutura para isolar dados por empresa. A configuração do banco e as políticas de acesso precisam ser validadas com contas de empresas diferentes antes de receber dados reais. A integração com WhatsApp Business, o processamento automático de envios e a cobrança permanecem pendentes.

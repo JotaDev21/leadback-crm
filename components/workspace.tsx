@@ -119,7 +119,7 @@ export function Workspace({ section }: { section: string }) {
       registerTool: (tool: unknown, options: unknown) => Promise<void> | void;
     };
     const mc = (document as unknown as { modelContext?: MC }).modelContext;
-    if (!mc) return;
+    if (!app.demo || !mc) return;
     const controller = new AbortController();
     Promise.resolve(
       mc.registerTool(
@@ -151,7 +151,7 @@ export function Workspace({ section }: { section: string }) {
       ),
     ).catch(() => {});
     return () => controller.abort();
-  }, [app.data]);
+  }, [app.data, app.demo]);
   if (section === "login") return <Auth />;
   if (section === "onboarding") return <Onboarding />;
   if (!app.ready || (!app.demo && !app.user))
