@@ -2,7 +2,7 @@
 
 Protótipo de um painel comercial para acompanhar conversas e organizar retornos. A demo permite percorrer o fluxo de uma oportunidade, desde a leitura da conversa até o registro de uma recuperação.
 
-[Abrir a demonstração no navegador](https://jotadev21-portfolio.comettitan7.chatgpt.site/demos/leadback/)
+[Abrir a demonstração no navegador](https://jotadev21.github.io/demos/leadback/)
 
 ## Como testar a demo
 
